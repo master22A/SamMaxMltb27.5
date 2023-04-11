@@ -1,0 +1,33 @@
+name: heroku
+
+on:
+  workflow_dispatch:
+    inputs:
+      HEROKU_API_KEY:
+        description: 'heroku api key ထည့်ပါ'
+        required: true
+      HEROKU_APP_NAME:
+        description: 'heroku websiteတွင် app createပြီးထိုappnameထည့်ပါ'
+        required: true
+env:
+  HEROKU_API_KEY: ${{ inputs.HEROKU_API_KEY }}
+  HEROKU_APP_NAME: ${{ inputs.HEROKU_APP_NAME }}
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3.5.0
+
+      - name: Build the image
+        run: docker build . -t worker
+
+      - name: Login into Heroku Container registry
+        run: heroku container:login
+
+      - name: Push the image to Heroku
+        run: heroku container:push worker -a "${HEROKU_APP_NAME}"
+        
+      - name: Release image to Heroku
+        run: heroku container:release worker -a "${HEROKU_APP_NAME}"
